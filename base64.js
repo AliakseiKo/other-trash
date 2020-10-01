@@ -65,10 +65,25 @@ var base64 = (() => {
   return { encode: base64Encode, decode: base64Decode };
 })();
 
-const inBuff = new TextEncoder().encode('Hello World').buffer;
-const string = base64.encode(inBuff);
-const outBuff = base64.decode(string);
+const command = process.argv[2];
+const string = process.argv.slice(3).join(' ');
 
-console.log(string);
-console.log(inBuff);
-console.log(outBuff);
+switch (command) {
+  case 'encode':
+    process.stdout.write(base64.encode(new TextEncoder().encode(string).buffer));
+    break;
+  case 'decode':
+    process.stdout.write(new TextDecoder().decode(base64.decode(string)));
+    break;
+  default:
+    console.error('Unknown command. Available commands: encode, decode');
+    break;
+}
+
+// const inBuff = new TextEncoder().encode('Hello World').buffer;
+// const string = base64.encode(inBuff);
+// const outBuff = base64.decode(string);
+
+// console.log(string);
+// console.log(inBuff);
+// console.log(outBuff);
