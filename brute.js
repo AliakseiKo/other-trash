@@ -1,4 +1,4 @@
-function f({ chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', from = '' } = {}) {
+function brute({ chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', from = '' } = {}) {
   const charLength = chars.length;
 
   const s = [];
@@ -51,4 +51,4 @@ function f({ chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345
   }
 }
 
-f();
+brute();
