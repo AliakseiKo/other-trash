@@ -9,6 +9,7 @@ var base64 = (() => {
 
   function base64Encode(/* Uint8Array */ buffer) {
     const bufferLength = buffer.byteLength;
+    if (bufferLength === 0) return '';
     const extra = bufferLength * 2 % 3;
     const stringLength = (bufferLength + extra) * 8 / 6;
     const string = new Array(stringLength);
@@ -16,8 +17,8 @@ var base64 = (() => {
     let
       bufferIndex = 0,
       stringIndex = 0,
-      preparedByte = 0b00000000,
-      inputByte,
+      preparedByte = 0x00,
+      bufferByte,
       shiftResult,
       shiftedBits,
       offset = 0;
@@ -26,14 +27,14 @@ var base64 = (() => {
       if (offset === 6) {
         string[stringIndex++] = CHARS[preparedByte];
         offset = 0;
-        preparedByte = 0b00000000;
+        preparedByte = 0x00;
       }
 
       offset += 2;
-      inputByte = buffer[bufferIndex++];
+      bufferByte = buffer[bufferIndex++];
 
-      shiftResult = inputByte >> offset;
-      shiftedBits = shiftResult << offset ^ inputByte;
+      shiftResult = bufferByte >> offset;
+      shiftedBits = shiftResult << offset ^ bufferByte;
 
       string[stringIndex++] = CHARS[preparedByte ^ shiftResult];
 
@@ -88,10 +89,12 @@ const string = process.argv.slice(3).join(' ');
 
 switch (command) {
   case 'encode':
-    console.log(base64.encode(new TextEncoder().encode(string)));
+    console.log('my  ', base64.encode(new TextEncoder().encode(string)));
+    console.log('node', Buffer.from(string).toString('base64'));
     break;
   case 'decode':
-    console.log(new TextDecoder().decode(base64.decode(string)));
+    console.log('my  ', new TextDecoder().decode(base64.decode(string)));
+    console.log('node', Buffer.from(string, 'base64').toString('utf-8'));
     break;
   default:
     console.error('Unknown command. Available commands: encode, decode');
