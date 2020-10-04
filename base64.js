@@ -50,32 +50,39 @@ var base64 = (() => {
     return string.join('');
   }
 
-  function base64Decode(str) {
-    let extra = 0;
-    let strLength = str.length;
-    const offset = 8;
+  function base64Decode(string) {
+    const paddingPosition = string.indexOf('=');
+    const extra = (paddingPosition > 0) ? string.length - paddingPosition : 0;
+    const stringLength = string.length - extra;
+    const bufferLength = string.length * 6 / 8 - extra;
+    const buffer = new Uint8Array(bufferLength);
 
-    const pos = str.indexOf('=');
-    if (pos > 0) {
-      extra = str.length - pos;
-      strLength -= extra;
-    }
+    let
+      bufferIndex = 0,
+      stringIndex = 0,
+      preparedByte = 0x00,
+      charByte,
+      shiftResult,
+      shiftedBits,
+      offset = 0;
 
-    let buff = [];
+    while (stringIndex < stringLength) {
+      charByte = CHAR_INDEX[string[stringIndex++]] ?? 0x3f;
 
-    for (let i = 0; i < strLength; ++i) {
-      buff.push(CHAR_INDEX[str[i]].toString(2).padStart(6, '0'));
-    }
+      if (offset === 0) {
+        offset = 6;
+        preparedByte = charByte << 2;
+        continue;
+      }
 
-    buff.push('000000'.repeat(extra));
-    buff = buff.join('');
+      offset -= 2;
 
-    const length = str.length * 6 / 8 - extra;
-    const buffer = new ArrayBuffer(length);
-    const view = new Uint8Array(buffer);
+      shiftResult = charByte >> offset;
+      shiftedBits = shiftResult << offset ^ charByte;
 
-    for (let i = 0; i < length; ++i) {
-      view[i] = parseInt(buff.slice(i * offset, i * offset + offset), 2);
+      buffer[bufferIndex++] = preparedByte ^ shiftResult;
+
+      preparedByte = shiftedBits << 8 - offset;
     }
 
     return buffer;
@@ -100,11 +107,3 @@ switch (command) {
     console.error('Unknown command. Available commands: encode, decode');
     break;
 }
-
-// const inBuff = new TextEncoder().encode('Hello World').buffer;
-// const string = base64.encode(inBuff);
-// const outBuff = base64.decode(string);
-
-// console.log(string);
-// console.log(inBuff);
-// console.log(outBuff);
