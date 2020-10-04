@@ -1,32 +1,50 @@
 var base64 = (() => {
   const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  const PADDING = '=';
+
   const CHAR_INDEX = {};
   for (let i = 0; i < CHARS.length; ++i) {
     CHAR_INDEX[CHARS[i]] = i;
   }
 
-  function base64Encode(buffer) {
-    let buff = [];
+  function base64Encode(/* Uint8Array */ buffer) {
+    const bufferLength = buffer.byteLength;
+    const extra = bufferLength * 2 % 3;
+    const stringLength = (bufferLength + extra) * 8 / 6;
+    const string = new Array(stringLength);
 
-    new Uint8Array(buffer).forEach((value) => {
-      buff.push(value.toString(2).padStart(8, '0'));
-    });
+    let
+      bufferIndex = 0,
+      stringIndex = 0,
+      preparedByte = 0b00000000,
+      inputByte,
+      shiftResult,
+      shiftedBits,
+      offset = 0;
 
-    const extra = buff.length * 8 % 3;
+    while (bufferIndex < bufferLength) {
+      if (offset === 6) {
+        string[stringIndex++] = CHARS[preparedByte];
+        offset = 0;
+        preparedByte = 0b00000000;
+      }
 
-    buff.push('00000000'.repeat(extra));
-    buff = buff.join('');
+      offset += 2;
+      inputByte = buffer[bufferIndex++];
 
-    const string = [];
-    const offset = 6;
-    const length = buff.length / offset - extra;
+      shiftResult = inputByte >> offset;
+      shiftedBits = shiftResult << offset ^ inputByte;
 
-    for (let i = 0; i < length; ++i) {
-      const index = parseInt(buff.slice(i * offset, i * offset + offset), 2);
-      string.push(CHARS[index]);
+      string[stringIndex++] = CHARS[preparedByte ^ shiftResult];
+
+      preparedByte = shiftedBits << 6 - offset;
     }
 
-    string.push('='.repeat(extra));
+    string[stringIndex++] = CHARS[preparedByte];
+
+    while (stringIndex < stringLength) {
+      string[stringIndex++] = PADDING;
+    }
 
     return string.join('');
   }
@@ -70,10 +88,10 @@ const string = process.argv.slice(3).join(' ');
 
 switch (command) {
   case 'encode':
-    process.stdout.write(base64.encode(new TextEncoder().encode(string).buffer));
+    console.log(base64.encode(new TextEncoder().encode(string)));
     break;
   case 'decode':
-    process.stdout.write(new TextDecoder().decode(base64.decode(string)));
+    console.log(new TextDecoder().decode(base64.decode(string)));
     break;
   default:
     console.error('Unknown command. Available commands: encode, decode');
