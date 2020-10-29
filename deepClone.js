@@ -23,7 +23,7 @@
   function cloneArray(array, deepClone) {
     const newArray = new Array(array.length);
 
-    for (let i = 0; i < arr.length; ++i) {
+    for (let i = 0; i < newArray.length; ++i) {
       newArray[i] = deepClone(array[i]);
     }
 
