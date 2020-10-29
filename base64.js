@@ -1,4 +1,4 @@
-var base64 = (() => {
+const base64 = (() => {
   const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   const PADDING = '=';
 
@@ -50,7 +50,7 @@ var base64 = (() => {
     return string.join('');
   }
 
-  function base64Decode(string) {
+  function base64Decode(/* string */ string) {
     const paddingPosition = string.indexOf('=');
     const extra = (paddingPosition > 0) ? string.length - paddingPosition : 0;
     const stringLength = string.length - extra;
