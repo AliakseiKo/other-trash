@@ -101,24 +101,3 @@
 
   return deepClone;
 });
-
-
-// function deepClone(value) {
-//   const clonned = new Map();
-
-//   return (function _deepClone(value) {
-//     if (value === null || typeof value !== 'object') return value;
-
-//     if (clonned.has(value)) return clonned.get(value);
-
-//     const prototype = Object.getPrototypeOf(value);
-
-//     switch (prototype) {
-//       case Array.prototype: return cloneArray(_deepClone, clonned, value);
-//       case Map.prototype: return cloneMap(_deepClone, clonned, value);
-//       case Set.prototype: return cloneSet(_deepClone, clonned, value);
-//       case Date.prototype: return cloneDate(_deepClone, clonned, value);
-//       default: return cloneObject(_deepClone, clonned, value);
-//     }
-//   })(value);
-// }
