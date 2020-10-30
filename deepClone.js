@@ -7,21 +7,29 @@
     global['deepClone'] = factory();
 })(globalThis || global || window || self || this, () => {
   function deepClone(value) {
-    if (value === null || typeof value !== 'object') return value;
+    const clonned = new Map();
 
-    const prototype = Object.getPrototypeOf(value);
+    return (function _deepClone(value) {
+      if (value === null || typeof value !== 'object') return value;
 
-    switch (prototype) {
-      case Array.prototype: return cloneArray(value, deepClone);
-      case Map.prototype: return cloneMap(value, deepClone);
-      case Set.prototype: return cloneSet(value, deepClone);
-      case Date.prototype: return cloneDate(value);
-      default: return cloneObject(value, deepClone);
-    }
+      if (clonned.has(value)) return clonned.get(value);
+
+      const prototype = Object.getPrototypeOf(value);
+
+      switch (prototype) {
+        case Array.prototype: return cloneArray(_deepClone, clonned, value);
+        case Map.prototype: return cloneMap(_deepClone, clonned, value);
+        case Set.prototype: return cloneSet(_deepClone, clonned, value);
+        case Date.prototype: return cloneDate(_deepClone, clonned, value);
+        default: return cloneObject(_deepClone, clonned, value);
+      }
+    })(value);
   }
 
-  function cloneArray(array, deepClone) {
+  function cloneArray(deepClone, clonned, array) {
     const newArray = new Array(array.length);
+
+    clonned.set(array, newArray);
 
     for (let i = 0; i < newArray.length; ++i) {
       newArray[i] = deepClone(array[i]);
@@ -30,8 +38,10 @@
     return newArray;
   }
 
-  function cloneMap(map, deepClone) {
+  function cloneMap(deepClone, clonned, map) {
     const newMap = new Map();
+
+    clonned.set(map, newMap);
 
     for (const [ key, value ] of map) {
       newMap.set(deepClone(key), deepClone(value));
@@ -40,8 +50,10 @@
     return newMap;
   }
 
-  function cloneSet(set, deepClone) {
+  function cloneSet(deepClone, clonned, set) {
     const newSet = new Set();
+
+    clonned.set(set, newSet);
 
     for (const value of set) {
       newSet.add(deepClone(value));
@@ -50,11 +62,19 @@
     return newSet;
   }
 
-  function cloneDate(date) {
-    return new Date(date);
+  function cloneDate(deepClone, clonned, date) {
+    const newDate = new Date(date);
+
+    clonned.set(date, newDate);
+
+    return newDate;
   }
 
-  function cloneObject(object, deepClone) {
+  function cloneObject(deepClone, clonned, object) {
+    const newObject = Object.create(null);
+
+    clonned.set(object, newObject);
+
     const descriptors = Object.getOwnPropertyDescriptors(object);
 
     const stringKeys = Object.getOwnPropertyNames(descriptors);
@@ -70,10 +90,35 @@
       descriptor.value = deepClone(descriptor.value);
     }
 
+    Object.defineProperties(newObject, descriptors);
+
     const prototype = Object.getPrototypeOf(object);
 
-    return Object.create(prototype, descriptors);
+    Object.setPrototypeOf(newObject, prototype);
+
+    return newObject;
   }
 
   return deepClone;
 });
+
+
+// function deepClone(value) {
+//   const clonned = new Map();
+
+//   return (function _deepClone(value) {
+//     if (value === null || typeof value !== 'object') return value;
+
+//     if (clonned.has(value)) return clonned.get(value);
+
+//     const prototype = Object.getPrototypeOf(value);
+
+//     switch (prototype) {
+//       case Array.prototype: return cloneArray(_deepClone, clonned, value);
+//       case Map.prototype: return cloneMap(_deepClone, clonned, value);
+//       case Set.prototype: return cloneSet(_deepClone, clonned, value);
+//       case Date.prototype: return cloneDate(_deepClone, clonned, value);
+//       default: return cloneObject(_deepClone, clonned, value);
+//     }
+//   })(value);
+// }
